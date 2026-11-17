@@ -1,12 +1,10 @@
-import sys
-from pathlib import Path
-
 import pytest
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-import pull_requests_collector as prc  # noqa: E402
+import pull_requests_collector as prc
 
-R = lambda n: prc.PRRef("o", "r", n)
+
+def R(n):
+    return prc.PRRef("o", "r", n)
 
 
 def node(n, deps=()):

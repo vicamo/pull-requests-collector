@@ -106,7 +106,7 @@ class Api:
                 return results
             page += 1
 
-    def dependencies(self, ref: "PRRef") -> list["PRRef"]:
+    def dependencies(self, ref: PRRef) -> list[PRRef]:
         """PRs that must be applied before ref."""
         if self.github:
             ep = f"/repos/{ref.owner}/{ref.repo}/issues/{ref.number}/dependencies/blocked_by"
@@ -219,8 +219,8 @@ class PRNode:
 
 def matches_client_filters(pr: dict, filters: dict) -> bool:
     if "labels" in filters:
-        required = {l.strip() for l in filters["labels"].split(",") if l.strip()}
-        actual = {l["name"] for l in pr.get("labels") or []}
+        required = {x.strip() for x in filters["labels"].split(",") if x.strip()}
+        actual = {x["name"] for x in pr.get("labels") or []}
         if not required <= actual:
             return False
     if "base" in filters and pr["base"]["ref"] != filters["base"]:
@@ -339,7 +339,9 @@ def select_proposed_commits(commits: list[str], cwd: str) -> tuple[list[str], se
     return selected, fingerprint
 
 
-def simulate_cherry_pick(selected: list[str], tip: str, cwd: str, committer: tuple[str, ...]) -> str | None:
+def simulate_cherry_pick(
+    selected: list[str], tip: str, cwd: str, committer: tuple[str, ...]
+) -> str | None:
     """Replay commits in memory on top of tip; return the new tip or None on conflict.
 
     Uses merge-tree and commit-tree only, so the index and worktree stay untouched.
@@ -471,7 +473,9 @@ def main(argv: list[str] | None = None) -> None:
         for url in buglinks:
             grouped.setdefault(url, []).append(ref.full)
 
-    full = lambda refs: [r.full for r in refs]
+    def full(refs: list[PRRef]) -> list[str]:
+        return [r.full for r in refs]
+
     result = {
         "dry_run": args.dry_run,
         "platform": api.platform,
