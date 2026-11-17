@@ -1,4 +1,12 @@
+<!-- markdownlint-disable MD013 MD024 -->
+
 # Changelog
+
+## [1.2.0](https://github.com/vicamo/pull-requests-collector/compare/v1.1.0...v1.2.0) (2026-11-17)
+
+### Features
+
+- make it an installable package ([49dc85e](https://github.com/vicamo/pull-requests-collector/commit/49dc85e71869c6f730d87cdddc03cfc0d376dd2f))
 
 ## [1.1.0](https://github.com/vicamo/pull-requests-collector/compare/v1.0.0...v1.1.0) (2026-11-17)
 

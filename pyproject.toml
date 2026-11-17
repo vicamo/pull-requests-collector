@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pull-requests-collector"
-version = "1.1.0"  # x-release-please-version
+version = "1.2.0"  # x-release-please-version
 description = "Collect pull requests from GitHub, Gitea or Forgejo and cherry-pick them in dependency order"
 readme = "README.md"
 license = "Apache-2.0"
