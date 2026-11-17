@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.0](https://github.com/vicamo/pull-requests-collector/compare/v1.0.0...v1.1.0) (2026-11-17)
+
+### Bugfixes
+
+- do not skip draft PRs as unmergeable ([da627ec](https://github.com/vicamo/pull-requests-collector/commit/da627ec55ba0013b76da021daffed66d675ac7ee))
+
 ## 1.0.0 (2026-11-17)
 
 ### Features
