@@ -16,7 +16,8 @@ JSON document goes to stdout.
 3. Resolve the issue-dependency graph (BFS) and topologically sort it,
    dependencies first. A cycle is a fatal error.
 4. For each PR in order:
-   - skip it if the server reports it unmergeable;
+   - skip it if the server reports it unmergeable (ignored for drafts,
+     which Gitea/Forgejo always report as unmergeable);
    - fetch `refs/pull/N/head` from the PR's own repository;
    - select the proposed commits: the topmost run of commits sharing the
      newest commit's `BugLink:` set (older commits are rebase artifacts);

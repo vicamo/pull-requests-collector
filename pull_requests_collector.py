@@ -256,13 +256,15 @@ def resolve(api: Api, seeds: set[PRRef]) -> dict[PRRef, PRNode]:
             continue
         log(f"Resolving: {ref.full}")
         pr = api.get(f"/repos/{ref.owner}/{ref.repo}/pulls/{ref.number}")
-        mergeable = pr.get("mergeable")  # github reports null while computing
+        # github reports null while computing; gitea/forgejo report false for every
+        # draft regardless of conflicts, so only trust the flag for ready PRs
+        mergeable = pr.get("mergeable") is not False or bool(pr.get("draft"))
         nodes[ref] = node = PRNode(
             ref=ref,
             title=pr["title"],
             base_ref=pr["base"]["ref"],
             merge_base=pr.get("merge_base") or "",
-            mergeable=mergeable is not False,
+            mergeable=mergeable,
         )
         node.deps = api.dependencies(ref)
         queue.extend(d for d in node.deps if d not in nodes)
