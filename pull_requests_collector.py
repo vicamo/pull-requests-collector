@@ -389,7 +389,9 @@ def cherry_pick(
         log(f"::error::Topmost commit of {ref.full} has no BugLink")
         return False, [], tip
     selected, buglinks = selection
-    log(f"  {len(selected)}/{len(commits)} commit(s), BugLink: {', '.join(sorted(buglinks))}")
+    skipped = len(commits) - len(selected)
+    note = f", {skipped} older commit(s) skipped" if skipped else ""
+    log(f"  {len(selected)} commit(s) to apply{note}, BugLink: {', '.join(sorted(buglinks))}")
 
     if dry_run:
         new_tip = simulate_cherry_pick(selected, tip, cwd, committer)
