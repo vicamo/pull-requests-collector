@@ -4,7 +4,8 @@
   "packages": {
     ".": {
       "release-type": "simple",
-      "package-name": "pull-requests-collector"
+      "package-name": "pull-requests-collector",
+      "extra-files": ["pyproject.toml"]
     }
   }
 }

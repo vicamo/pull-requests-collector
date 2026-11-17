@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Collect pull requests from GitHub, Gitea or Forgejo, resolve their
 dependencies and cherry-pick them, in topological order, onto a git tree.
 
@@ -507,7 +506,3 @@ def main(argv: list[str] | None = None) -> None:
     }
     print(json.dumps(result, indent=2))
     sys.exit(1 if failed else 0)
-
-
-if __name__ == "__main__":
-    main()
