@@ -20,9 +20,7 @@ from dataclasses import dataclass, field
 from typing import NoReturn
 
 PAGE_SIZE = 50
-BUGLINK_RE = re.compile(
-    r"^BugLink:\s*(https://bugs\.launchpad\.net/bugs/\d+)", re.MULTILINE
-)
+BUGLINK_RE = re.compile(r"^BugLink:\s*(https://bugs\.launchpad\.net/bugs/\d+)", re.MULTILINE)
 
 # DSL key -> (gitea/forgejo param, github param)
 FILTER_MAP = {
@@ -290,8 +288,7 @@ def topological_sort(nodes: dict[PRRef, PRNode]) -> list[PRRef]:
                 queue.append(nxt)
     if len(order) != len(nodes):
         raise RuntimeError(
-            "Dependency cycle among: "
-            + ", ".join(r.full for r in set(nodes) - set(order))
+            "Dependency cycle among: " + ", ".join(r.full for r in set(nodes) - set(order))
         )
     return order
 
@@ -303,7 +300,7 @@ def git(*args: str, cwd: str, check: bool = True, config: tuple[str, ...] = ()):
     cmd = ["git"]
     for c in config:
         cmd += ["-c", c]
-    r = subprocess.run(cmd + list(args), capture_output=True, text=True, cwd=cwd)
+    r = subprocess.run(cmd + list(args), capture_output=True, text=True, cwd=cwd, check=False)
     if check and r.returncode != 0:
         die(f"git {' '.join(args)} failed:\n{r.stderr}")
     return r
@@ -347,19 +344,28 @@ def simulate_cherry_pick(
     Uses merge-tree and commit-tree only, so the index and worktree stay untouched.
     """
     for sha in selected:
-        mt = git("merge-tree", "--write-tree", f"--merge-base={sha}^", tip, sha,
-                 cwd=cwd, check=False)
+        mt = git(
+            "merge-tree", "--write-tree", f"--merge-base={sha}^", tip, sha, cwd=cwd, check=False
+        )
         if mt.returncode != 0:
             log(f"::error::Cherry-pick of {sha} would conflict:\n{mt.stdout}{mt.stderr}")
             return None
         tree = mt.stdout.splitlines()[0]
-        tip = git("commit-tree", tree, "-p", tip, "-m", f"dry-run {sha}",
-                  cwd=cwd, config=committer).stdout.strip()
+        tip = git(
+            "commit-tree", tree, "-p", tip, "-m", f"dry-run {sha}", cwd=cwd, config=committer
+        ).stdout.strip()
     return tip
 
 
-def cherry_pick(api: Api, node: PRNode, cwd: str, auth: tuple[str, ...],
-                committer: tuple[str, ...], dry_run: bool, tip: str) -> tuple[bool, list[str], str]:
+def cherry_pick(
+    api: Api,
+    node: PRNode,
+    cwd: str,
+    auth: tuple[str, ...],
+    committer: tuple[str, ...],
+    dry_run: bool,
+    tip: str,
+) -> tuple[bool, list[str], str]:
     """Returns (success, buglinks, tip).  tip is only advanced in dry-run mode."""
     ref = node.ref
     log(f"{'Simulating' if dry_run else 'Cherry-picking'} {ref.full}: {node.title}")
@@ -418,18 +424,25 @@ def resolve_committer(cwd: str, name: str, email: str) -> tuple[str, ...]:
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--server-url", required=True, help="e.g. https://github.com")
-    p.add_argument("--query", action="append", required=True,
-                   help="'owner/repo [key:value ...]'; repeatable, results are unioned")
+    p.add_argument(
+        "--query",
+        action="append",
+        required=True,
+        help="'owner/repo [key:value ...]'; repeatable, results are unioned",
+    )
     p.add_argument("--token", default="", help="API / git token")
-    p.add_argument("--platform", default="auto",
-                   choices=["auto", "github", "gitea", "forgejo"])
+    p.add_argument("--platform", default="auto", choices=["auto", "github", "gitea", "forgejo"])
     p.add_argument("--working-directory", default=".", help="existing git tree")
     p.add_argument("--committer-name", default="")
     p.add_argument("--committer-email", default="")
-    p.add_argument("--skip-on-error", action="store_true",
-                   help="continue after a failed cherry-pick")
-    p.add_argument("--dry-run", action="store_true",
-                   help="simulate the cherry-picks without touching index or worktree")
+    p.add_argument(
+        "--skip-on-error", action="store_true", help="continue after a failed cherry-pick"
+    )
+    p.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="simulate the cherry-picks without touching index or worktree",
+    )
     return p.parse_args(argv)
 
 
