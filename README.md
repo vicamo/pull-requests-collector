@@ -3,7 +3,7 @@
 `pull_requests_collector.py` collects pull requests from GitHub, Gitea or
 Forgejo, resolves their dependencies, and cherry-picks them, in dependency
 order, onto an existing Git tree. It is a single stdlib-only Python script
-(Python 3.10+, Git 2.38+).
+(Python 3.10+; Git 2.38+ is needed for `--dry-run`).
 
 It is meant to be wrapped by a CI action: all logs go to stderr, and a single
 JSON document goes to stdout.
@@ -39,7 +39,8 @@ including conflicts between PRs of the same run, are still detected.
 
 `--platform auto` picks GitHub for github.com, otherwise probes
 `<server>/api/v1/version` (a 401/403 still counts as "Gitea/Forgejo"), and
-falls back to GitHub Enterprise. Forgejo is reported as `gitea`.
+falls back to GitHub Enterprise. With `auto`, Forgejo is reported as
+`gitea`; an explicit `--platform` value is reported as given.
 
 Notes: GitHub allows one milestone per query (names are translated to
 numbers) and has no `q` filter. GitHub reports `mergeable: null` while it is
@@ -122,18 +123,19 @@ Values containing spaces are not supported.
 }
 ```
 
-| Field              | Description                                            |
-| ------------------ | ------------------------------------------------------ |
-| `dry_run`          | boolean; when true, `applied` means "would apply"      |
-| `platform`         | `github` or `gitea` (also for Forgejo)                 |
-| `enumerated`       | all PRs in apply order, including unmergeable ones     |
-| `applied`          | PRs cherry-picked (or simulated in dry-run)            |
-| `skipped`          | PRs skipped because the server marks them unmergeable  |
-| `failed`           | PRs with a conflict or no BugLink on the newest commit |
-| `titles`           | PR ref to title                                        |
-| `buglinks`         | PR ref to its BugLink URLs                             |
-| `buglinks_grouped` | BugLink URL to the PRs sharing it                      |
-| `ref`              | HEAD SHA of the tree (unchanged in dry-run)            |
+| Field              | Description                                                |
+| ------------------ | ---------------------------------------------------------- |
+| `dry_run`          | boolean; when true, `applied` means "would apply"          |
+| `platform`         | detected or given platform (`auto` gives `github`/`gitea`) |
+| `enumerated`       | all PRs in apply order, including unmergeable ones and     |
+|                    | ones never reached because an earlier PR failed            |
+| `applied`          | PRs cherry-picked (or simulated in dry-run)                |
+| `skipped`          | PRs skipped because the server marks them unmergeable      |
+| `failed`           | PRs with a conflict or no BugLink on the newest commit     |
+| `titles`           | PR ref to title                                            |
+| `buglinks`         | PR ref to its BugLink URLs                                 |
+| `buglinks_grouped` | BugLink URL to the PRs sharing it                          |
+| `ref`              | HEAD SHA of the tree (unchanged in dry-run)                |
 
 ### Exit status
 
