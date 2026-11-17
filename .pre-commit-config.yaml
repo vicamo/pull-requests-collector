@@ -6,7 +6,17 @@ repos:
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-added-large-files
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.17.5
     hooks:
       - id: ruff-check
+        args: [--config, .github/linters/.ruff.toml]
+      - id: ruff-format
+        args: [--config, .github/linters/.ruff.toml]
+  - repo: https://github.com/rbubley/mirrors-prettier
+    rev: v3.10.1
+    hooks:
+      - id: prettier
+        types_or: [markdown, yaml]
