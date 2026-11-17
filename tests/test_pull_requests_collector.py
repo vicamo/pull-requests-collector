@@ -130,3 +130,24 @@ def test_resolve_committer_fallback_to_head(repo):
         "user.name=X",
         "user.email=x@example.com",
     )
+
+
+class FakeApi:
+    def __init__(self, prs):
+        self.prs = prs
+
+    def get(self, endpoint):
+        return self.prs[int(endpoint.rsplit("/", 1)[1])]
+
+    def dependencies(self, ref):
+        return []
+
+
+@pytest.mark.parametrize(
+    ("mergeable", "draft", "expected"),
+    [(True, False, True), (None, False, True), (False, False, False), (False, True, True)],
+)
+def test_resolve_mergeable(mergeable, draft, expected):
+    pr = {"title": "t", "base": {"ref": "main"}, "mergeable": mergeable, "draft": draft}
+    nodes = prc.resolve(FakeApi({1: pr}), {R(1)})
+    assert nodes[R(1)].mergeable is expected
