@@ -248,6 +248,7 @@ def collect(api: Api, queries: list[PRQuery]) -> set[PRRef]:
 
 def resolve(api: Api, seeds: set[PRRef]) -> dict[PRRef, PRNode]:
     nodes: dict[PRRef, PRNode] = {}
+    merged: set[PRRef] = set()
     queue = sorted(seeds, key=lambda r: r.full)
     while queue:
         ref = queue.pop(0)
@@ -255,6 +256,10 @@ def resolve(api: Api, seeds: set[PRRef]) -> dict[PRRef, PRNode]:
             continue
         log(f"Resolving: {ref.full}")
         pr = api.get(f"/repos/{ref.owner}/{ref.repo}/pulls/{ref.number}")
+        if pr.get("merged") and ref not in seeds:
+            log(f"  already merged, not needed: {ref.full}")
+            merged.add(ref)
+            continue
         # github reports null while computing; gitea/forgejo report false for every
         # draft regardless of conflicts, so only trust the flag for ready PRs
         mergeable = pr.get("mergeable") is not False or bool(pr.get("draft"))
@@ -267,6 +272,8 @@ def resolve(api: Api, seeds: set[PRRef]) -> dict[PRRef, PRNode]:
         )
         node.deps = api.dependencies(ref)
         queue.extend(d for d in node.deps if d not in nodes)
+    for node in nodes.values():
+        node.deps = [d for d in node.deps if d not in merged]
     return nodes
 
 

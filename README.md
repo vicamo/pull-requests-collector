@@ -14,7 +14,8 @@ JSON document goes to stdout.
 2. List matching PRs (`/issues`), re-checking labels, base branch and draft
    state client-side because servers silently ignore unknown labels.
 3. Resolve the issue-dependency graph (BFS) and topologically sort it,
-   dependencies first. A cycle is a fatal error.
+   dependencies first. Dependencies that are already merged are left out.
+   A cycle is a fatal error.
 4. For each PR in order:
    - skip it if the server reports it unmergeable (ignored for drafts,
      which Gitea/Forgejo always report as unmergeable);
