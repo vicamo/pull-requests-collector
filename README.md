@@ -1,8 +1,8 @@
 # pull-requests-collector
 
-`pull_requests_collector.py` collects pull requests from GitHub, Gitea or
+`pull-requests-collector` collects pull requests from GitHub, Gitea or
 Forgejo, resolves their dependencies, and cherry-picks them, in dependency
-order, onto an existing Git tree. It is a single stdlib-only Python script
+order, onto an existing Git tree. It is a stdlib-only Python package
 (Python 3.10+; Git 2.38+ is needed for `--dry-run`).
 
 It is meant to be wrapped by a CI action: all logs go to stderr, and a single
@@ -62,10 +62,20 @@ The identity is passed as `git -c` settings; nothing is written to the
 repository config. Set `user.name`/`user.email` in the target tree, or pass
 the flags, to control the `Signed-off-by:` trailer.
 
+## Install
+
+```sh
+pip install git+https://github.com/vicamo/pull-requests-collector@v1
+```
+
+`@v1` follows the latest 1.x release; use `@v1.1.0` to pin. Each GitHub
+release also carries a wheel and an sdist. `python -m pull_requests_collector`
+works as well.
+
 ## Interface
 
 ```sh
-pull_requests_collector.py --server-url URL --query QUERY [--query QUERY ...]
+pull-requests-collector --server-url URL --query QUERY [--query QUERY ...]
     [--token TOKEN] [--platform auto|github|gitea|forgejo]
     [--working-directory DIR] [--committer-name N] [--committer-email E]
     [--skip-on-error] [--dry-run]
@@ -159,7 +169,7 @@ git clone https://forge.example.com/example/firmware.git tests
 cd tests
 git checkout -b pr-collector-test origin/stable
 
-pull_requests_collector.py \
+pull-requests-collector \
   --server-url https://forge.example.com \
   --token "$TOKEN" \
   --query 'example/firmware label:stable ready:true' \
