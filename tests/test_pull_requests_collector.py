@@ -133,14 +133,15 @@ def test_resolve_committer_fallback_to_head(repo):
 
 
 class FakeApi:
-    def __init__(self, prs):
+    def __init__(self, prs, deps=None):
         self.prs = prs
+        self.deps = deps or {}
 
     def get(self, endpoint):
         return self.prs[int(endpoint.rsplit("/", 1)[1])]
 
     def dependencies(self, ref):
-        return []
+        return self.deps.get(ref.number, [])
 
 
 @pytest.mark.parametrize(
@@ -151,3 +152,19 @@ def test_resolve_mergeable(mergeable, draft, expected):
     pr = {"title": "t", "base": {"ref": "main"}, "mergeable": mergeable, "draft": draft}
     nodes = prc.resolve(FakeApi({1: pr}), {R(1)})
     assert nodes[R(1)].mergeable is expected
+
+
+def test_resolve_drops_merged_dependencies():
+    def pr(merged):
+        return {"title": "t", "base": {"ref": "main"}, "mergeable": True, "merged": merged}
+
+    api = FakeApi({1: pr(True), 2: pr(False), 3: pr(False)}, {2: [R(1)], 3: [R(2)]})
+    nodes = prc.resolve(api, {R(3)})
+    assert set(nodes) == {R(2), R(3)}
+    assert nodes[R(2)].deps == []
+    assert prc.topological_sort(nodes) == [R(2), R(3)]
+
+
+def test_resolve_keeps_merged_seed():
+    pr = {"title": "t", "base": {"ref": "main"}, "mergeable": True, "merged": True}
+    assert set(prc.resolve(FakeApi({1: pr}), {R(1)})) == {R(1)}
